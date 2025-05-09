@@ -1,6 +1,7 @@
 # models/voice_handler.py
-import speech_recognition as sr
 import pyttsx3
+import speech_recognition as sr
+
 
 class VoiceHandler:
     def __init__(self):
@@ -16,7 +17,7 @@ class VoiceHandler:
         """Listen for a command from the microphone and return the recognized speech."""
         with sr.Microphone() as source:
             print("🎤 Listening... (Make sure to speak clearly)")
-            self.speak("What do you want to play on YouTube?")
+            self.speak("What do you want to Search?")
             self.recognizer.adjust_for_ambient_noise(source)  # Adjust for background noise
             audio = self.recognizer.listen(source)
 
