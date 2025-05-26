@@ -1,146 +1,70 @@
+
+import sys
 import time
 
+from controller.intent_handler_v2 import IntentHandler_V2
 from controller.voice_control import VoiceHandler
-from models.automation_bookMyshow import BookMyShowAutomator
 from models.automation_wikipedia import WikipediaBot
 from models.automation_youtube import YouTubeBot
-from controller.intent_handler import IntentHandler
 
-def get_user_confirmation(intent_data):
-    """Get user confirmation for the identified intent"""
-    intent = intent_data['intent']
-    parameters = intent_data['parameters']
+
+class WorkFlowManager:
+    def __init__(self):
+        self.youtube_bot = YouTubeBot()
+        self.wikipedia_bot = WikipediaBot()
+        self.voice_handler = VoiceHandler()
+        
+    def youtube_workflow(self, task):
+        self.voice_handler.speak("Opening YouTube...")
+        print("Opening YouTube...")
+        self.youtube_bot.open_youtube()
+        self.voice_handler.speak(f"Searching for {task} on YouTube...")
+        print(f"Searching for {task} on YouTube...")
+        self.youtube_bot.search_video(task)
+        self.youtube_bot.play_first_video()
+        self.voice_handler.speak("looking for ads to skip...")
+        print("looking for ads to skip...")
+        self.youtube_bot.skip_ad_if_present()
+        self.voice_handler.speak("Enjoy your video!")
+        
+    def wikipedia_workflow(self, task):
+        self.voice_handler.speak("Opening Wikipedia...")
+        print("Opening Wikipedia...")
+        self.wikipedia_bot.open_wiki()
+        self.voice_handler.speak(f"Searching for {task} on Wikipedia...")
+        print(f"Searching for {task} on Wikipedia...")
+        self.wikipedia_bot.search_topic(task)
+        self.voice_handler.speak("Done! You can ask me anything else.")
+ 
+
+ 
+ 
+ 
+if __name__ == "__main__":
+    workflow_manager = WorkFlowManager()
+    intent_handler = IntentHandler_V2()
     
-    print("\nIdentified Intent:")
-    print(f"Action: {intent.upper()}")
-    print(f"Parameters: {parameters if parameters else 'None'}")
+    workflow_manager.voice_handler.model_speak_init()
     
     while True:
-        response = input("\nIs this correct? (yes/no/retry): ").lower().strip()
-        if response in ['yes', 'y']:
-            return True
-        elif response in ['no', 'n']:
-            return False
-        elif response in ['retry', 'r']:
-            return 'retry'
+        audio = workflow_manager.voice_handler.listen()
+        workflow_manager.voice_handler.speak("Processing your request...")
+        print("Processing your request...")
+        time.sleep(1)      
+        text = workflow_manager.voice_handler.transcribe_audio(audio)
+        print(f"Transcribed text: {text}")
+        workflow_manager.voice_handler.speak("Classifying your intent...")      
+        intent_data = intent_handler.classify_intent(text)
+        if not intent_data:
+            continue
+        
+        intent = intent_data.get("intent")
+        task = intent_data.get("task")
+        
+        if intent == "youtube":
+            workflow_manager.youtube_workflow(task)
+        elif intent == "wikipedia":
+            workflow_manager.wikipedia_workflow(task)
         else:
-            print("Please answer with 'yes', 'no', or 'retry'")
-
-class AutomationManager:
-    def __init__(self):
-        self.youtube_bot = None
-        self.wiki_bot = None
-        self.book_bot = None
-        self.driver_path = "chromedriver.exe"
-    
-    def get_bot(self, intent):
-        """Get or create the appropriate bot for the intent"""
-        if intent == 'youtube':
-            if not self.youtube_bot:
-                self.youtube_bot = YouTubeBot()
-            return self.youtube_bot
-        elif intent == 'wikipedia':
-            if not self.wiki_bot:
-                self.wiki_bot = WikipediaBot()
-            return self.wiki_bot
-        elif intent == 'bookmyshow':
-            if not self.book_bot:
-                self.book_bot = BookMyShowAutomator(driver_path=self.driver_path)
-            return self.book_bot
-        return None
-    
-    def close_bot(self, intent):
-        """Close the bot for the given intent"""
-        try:
-            if intent == 'youtube' and self.youtube_bot:
-                self.youtube_bot.quit()
-                self.youtube_bot = None
-            elif intent == 'wikipedia' and self.wiki_bot:
-                self.wiki_bot.quit()
-                self.wiki_bot = None
-            elif intent == 'bookmyshow' and self.book_bot:
-                self.book_bot.close()
-                self.book_bot = None
-        except Exception as e:
-            print(f"Error closing {intent} bot: {str(e)}")
-    
-    def close_all(self):
-        """Close all bots"""
-        self.close_bot('youtube')
-        self.close_bot('wikipedia')
-        self.close_bot('bookmyshow')
-
-if __name__ == "__main__":
-    # Initialize voice handler
-    voice = VoiceHandler()
-    
-    # Initialize automation manager
-    automation_manager = AutomationManager()
-    
-    # Initialize intent handler
-    intent_handler = IntentHandler()
-    
-    try:
-        while True:
-            print("\nListening for command... (Say 'quit' to exit)")
-            command = voice.listen()
-            
-            if not command:
-                print("No command detected. Please try again.")
-                continue
-                
-            if 'quit' in command.lower():
-                print("Exiting...")
-                break
-            
-            # Get intent classification
-            intent_data = intent_handler.classify_intent(command)
-            
-            # Get user confirmation
-            while True:
-                confirmation = get_user_confirmation(intent_data)
-                
-                if confirmation == 'retry':
-                    print("\nRetrying with different classification method...")
-                    intent_data = intent_handler._fallback_classify(command)
-                    continue
-                    
-                if confirmation:
-                    # User confirmed, get the appropriate bot
-                    intent = intent_data['intent']
-                    bot = automation_manager.get_bot(intent)
-                    
-                    if bot:
-                        # Update the intent handler with the current bot
-                        intent_handler.initialize_automation_instances(
-                            youtube_bot=automation_manager.youtube_bot,
-                            wiki_bot=automation_manager.wiki_bot,
-                            bookmyshow_bot=automation_manager.book_bot
-                        )
-                        
-                        # Execute the intent
-                        print("\nExecuting command...")
-                        success = intent_handler.execute_intent(intent_data)
-                        
-                        if success:
-                            print("Command executed successfully.")
-                            # Close the bot after successful execution
-                            automation_manager.close_bot(intent)
-                        else:
-                            print("Failed to execute command. Please try again.")
-                    else:
-                        print(f"Error: Could not initialize {intent} bot")
-                    break
-                else:
-                    print("\nCommand rejected. Please try again with a different command.")
-                    break
-            
-            # Add a small delay between commands
-            time.sleep(1)
-            
-    except KeyboardInterrupt:
-        print("\nProgram interrupted by user")
-    finally:
-        # Clean up all bots
-        automation_manager.close_all()
-        print("Program terminated.")
+            workflow_manager.voice_handler.speak("Sorry, I can't help with that.")
+   

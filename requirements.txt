@@ -8,3 +8,6 @@ torch
 openai-whisper
 sounddevice 
 scipy
+numpy>=1.21.0
+queue
+threading
