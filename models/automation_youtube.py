@@ -59,6 +59,46 @@ class YouTubeBot:
             time.sleep(1)
         except:
             print("No skippable ad found.")
+            
+    def like_video(self):
+        try:
+            like_button = self.wait.until(EC.element_to_be_clickable((By.XPATH, "(//ytd-toggle-button-renderer[@is-icon-button])[1]//button")))
+            like_button.click()
+            print("Video liked.")
+        except Exception as e:
+            print("Failed to like video:", e)
+
+    def dislike_video(self):
+        try:
+            dislike_button = self.wait.until(EC.element_to_be_clickable((By.XPATH, "(//ytd-toggle-button-renderer[@is-icon-button])[2]//button")))
+            dislike_button.click()
+            print("Video disliked.")
+        except Exception as e:
+            print("Failed to dislike video:", e)
+
+    def subscribe_channel(self):
+        try:
+            subscribe_button = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//ytd-subscribe-button-renderer//tp-yt-paper-button")))
+            if "SUBSCRIBE" in subscribe_button.text.upper():
+                subscribe_button.click()
+                print("Subscribed to channel.")
+            else:
+                print("Already subscribed.")
+        except Exception as e:
+            print("Failed to subscribe:", e)
+
+    def unsubscribe_channel(self):
+        try:
+            subscribe_button = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//ytd-subscribe-button-renderer//tp-yt-paper-button")))
+            if "SUBSCRIBED" in subscribe_button.text.upper():
+                subscribe_button.click()
+                confirm_btn = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//yt-confirm-dialog-renderer//tp-yt-paper-button[@aria-label='Unsubscribe']")))
+                confirm_btn.click()
+                print("Unsubscribed from channel.")
+            else:
+                print("Not subscribed.")
+        except Exception as e:
+            print("Failed to unsubscribe:", e)
 
     def quit(self):
         try:
