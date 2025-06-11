@@ -14,20 +14,9 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 
 
 class StackOverflowFlowBot:
-    def __init__(self, driver_path="chromedriver.exe"):
-        self.driver_path = driver_path
-        self.driver = None
-        self.wait = None
-
-    def initialize_driver(self, force=False):
-        if self.driver and not force:
-            return
-        options = Options()
-        options.add_experimental_option('excludeSwitches', ['enable-logging'])
-        service = Service(self.driver_path)
-        self.driver = webdriver.Chrome(service=service, options=options)
+    def __init__(self, driver):
+        self.driver = driver
         self.wait = WebDriverWait(self.driver, 10)
-        logging.info("Initialized ChromeDriver.")
 
     def open_stackoverflow(self):
         self.initialize_driver()

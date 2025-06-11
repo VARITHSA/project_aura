@@ -10,18 +10,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 class YouTubeBot:
-    def __init__(self, driver_path="chromedriver.exe"):
-        self.driver_path = driver_path
-        self.driver = None
-        self.wait = None
-
-    def initialize_driver(self):
-        options = Options()
-        options.add_experimental_option('excludeSwitches', ['enable-logging'])
-        service = Service(self.driver_path)
-        self.driver = webdriver.Chrome(service=service, options=options)
+    def __init__(self, driver):
+        self.driver = driver
         self.wait = WebDriverWait(self.driver, 10)
 
+    
     def open_youtube(self):
         if not self.driver:
             self.initialize_driver()

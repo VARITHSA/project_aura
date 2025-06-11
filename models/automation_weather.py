@@ -1,28 +1,22 @@
 # models/automation_weather.py
 
 import time
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 class WeatherBot:
-    def __init__(self, driver_path="chromedriver.exe"):
-        self.driver_path = driver_path
-        self.driver = None
-        self.wait = None
-
-    def initialize_driver(self):
-        options = Options()
-        options.add_experimental_option('excludeSwitches', ['enable-logging'])
-        service = Service(self.driver_path)
-        self.driver = webdriver.Chrome(service=service, options=options)
+    def __init__(self, driver):
+        self.driver = driver
         self.wait = WebDriverWait(self.driver, 10)
 
+    
     def get_weather(self, location="Bangalore"):
         if not self.driver:
             self.initialize_driver()

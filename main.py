@@ -1,145 +1,71 @@
-
 import sys
 import time
+
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 
 from controller.intent_handler_v2 import IntentHandler_V2
 from controller.intent_voice_handler import IntentVoiceHandler
 from controller.voice_control import VoiceHandler
-from models.automation_wikipedia import WikipediaBot
-from models.automation_youtube import YouTubeBot
+from controller.workflow_manager import WorkflowManager
 
 
-class WorkFlowManager:
-    def __init__(self):
-        self.youtube_bot = YouTubeBot()
-        self.wikipedia_bot = WikipediaBot()
-        self.voice_handler = VoiceHandler()
-        self.intent_agent = IntentVoiceHandler()
-        
-   
-    def youtube_workflow(self, intent_data, text):
-        if not intent_data.get("intent"):
-            print("No intent found in the input.")
-        if intent_data.get("intent") != "youtube":
-            print("❌ Invalid intent. This function only handles YouTube tasks.")
-            return
-        tasks = intent_data.get("tasks", {})
-        ordered_tasks = ["search", "play", "like", "dislike", "subscribe", "unsubscribe"]
-        print(tasks)
-        for task in ordered_tasks:
-            if task in tasks:
-                val = tasks[task]
-                
-                if task == "search":
-                    voice = self.intent_agent.get_response(text)
-                    self.youtube_bot.open_youtube()
-                    self.voice_handler.speak(voice)
-                    print(voice)
-                    self.youtube_bot.search_video(val)
-                elif task == "play":
-                    voice = self.intent_agent.get_response(text)
-                    self.voice_handler.speak(voice)
-                    print(voice)
-                    self.youtube_bot.play_first_video()
-                elif task == "like":
-                    voice = self.intent_agent.get_response(text)
-                    self.voice_handler.speak(voice)
-                    print(voice)
-                    self.youtube_bot.like_video()
-                elif task == "dislike":
-                    voice = self.intent_agent.get_response(text)
-                    self.voice_handler.speak(voice)
-                    print(voice)
-                    self.youtube_bot.dislike_video()
-                elif task == "subscribe":
-                    voice = self.intent_agent.get_response(text)
-                    self.voice_handler.speak(voice)
-                    print(voice)
-                    self.youtube_bot.subscribe_channel()
-                elif task == "unsubscribe":
-                    voice = self.intent_agent.get_response(text)
-                    self.voice_handler.speak(voice)
-                    print(voice)
-                    self.youtube_bot.unsubscribe_channel()
-                else:
-                    print(f"❌ Invalid task: {task}. Supported tasks are: {', '.join(ordered_tasks)}")
-                    time.sleep(2)
-                    self.voice_handler.speak(f"❌ Invalid task: {task}. Supported tasks are: {', '.join(ordered_tasks)}")
-                
-        
-            
+def main():
+    print("🔧 Initializing AURA components...")
     
-    def wikipedia_workflow(self, task: dict, text: str):
-        self.wikipedia_bot.initialize_driver()
-        if "search" in task:
-            topic = task["search"]
-            voice = self.intent_agent.get_response(text)
-            self.voice_handler.speak(voice)
-            print(voice)
-            self.wikipedia_bot.search_topic(topic)
-   
-            
-        
-        
-        
-    # def wikipedia_workflow(self, task):
-    #     self.voice_handler.speak("Opening Wikipedia...")
-    #     print("Opening Wikipedia...")
-    #     self.wikipedia_bot.open_wiki()
-    #     self.voice_handler.speak(f"Searching for {task} on Wikipedia...")
-    #     print(f"Searching for {task} on Wikipedia...")
-    #     self.wikipedia_bot.search_topic(task)
-    #     self.voice_handler.speak("Done! You can ask me anything else.")
- 
-
- 
- 
- 
-if __name__ == "__main__":
-    intent_handler = IntentHandler_V2()
+    voice_handler = VoiceHandler()
+    intent_classifier = IntentHandler_V2()
     intent_voice_handler = IntentVoiceHandler()
-    workflow_manager = WorkFlowManager()
-    vh = VoiceHandler()
-    print("Welcome to the Voice-Controlled Automation System!")
-    # vh = VoiceHandler()
-    # vh.speak("Hey! I am AURA, your personal assistant. How can I help you today?")
-    # while True:
-    #     audio = vh.listen()
-    #     text = vh.transcribe(audio)
-    #     if text is None:
-    #         continue
-    #     if not vh.running:
-    #         break
-    vh.model_speak_init()
-    print("AURA is listening...")
+    workflow_manager = WorkflowManager(voice_handler, intent_voice_handler)
+
+    init_message = "AURA is initializing..."
+    print(f"💡 {init_message}")
+    voice = intent_voice_handler.get_response(init_message)
+    voice_handler.speak(voice)
+    print(f"🗣️ {voice}")
+    
+    time.sleep(1)
+    print("🟢 AURA is ready! Say or type your command (type 'exit' to quit).")
+
     while True:
-        # audio = vh.listen()
-        # text = vh.transcribe(audio)
-        # if text is None:
-        #     continue
-        # if not vh.running:
-        #     break
-        # print(f"Transcribed text: {text}")
-        # voice = intent_voice_handler.get_response(text)
-        # vh.speak(voice)
-        text = input("Enter your command: ")
-        intent_data = intent_handler.classify_intent(text)
-        print(f"Intent data: {intent_data}")
-        if intent_data.get("intent") == "youtube":
-            workflow_manager.youtube_workflow(intent_data, text)
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-   
+        try:
+            # --- Input Options (Voice or Text) ---
+            # audio = voice_handler.listen()
+            # text = voice_handler.transcribe(audio)
+            text = input("💬 Type your command: ").strip()
+
+            if not text:
+                print("⚠️ Empty input received.")
+                continue
+            if text.lower() in ["exit", "quit", "stop"]:
+                voice_handler.speak("Goodbye!")
+                print("👋 Exiting AURA.")
+                break
+
+            print(f"🧠 Detected text: {text}")
+            intent_data = intent_classifier.classify_intent(text)
+            print(f"🧩 Intent Data: {intent_data}")
+
+            workflow_manager.execute_workflow(intent_data, text)
+            print("✅ Workflow executed successfully.")
+
+        except KeyboardInterrupt:
+            print("\n🛑 Interrupted by user.")
+            break
+        except Exception as e:
+            print(f"❌ Error: {e}")
+            voice_handler.speak("An error occurred while processing your request.")
+
+    print("🛑 Shutting down AURA...")
         
-   
+        
+        
+        
+        
+        
+    
+    
+    
+if __name__ == "__main__":
+    main()
