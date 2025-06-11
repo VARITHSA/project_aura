@@ -34,7 +34,23 @@ class IntentHandler_V2:
     - "dislike": true
     - "subscribe": <channel name or true>
     - "unsubscribe": <channel name or true>
-
+    For the 'stackoverflow' intent, support tasks like:
+    - "search": <query>
+    - "extract_answer": true
+    - "save_answer": true
+    - "upvote": true
+    - "open_profile": true
+    - "reset": true
+    
+    For the 'wikipedia' intent, support tasks like:
+    - "search": <topic>
+    - "read_summary": true
+    - "speak_summary": true
+    
+    
+    For the 'weather' intent, support tasks like:
+    - "get_weather": <location>
+    
     Return a JSON object in this format:
     {{
       "intent": "<intent name>",
@@ -55,6 +71,29 @@ class IntentHandler_V2:
         "like": true
       }}
     }}
+    "Get weather in Bangalore" →
+    {{
+      "intent": "weather",
+      "tasks": {{
+        "get_weather": "Bangalore"
+      }}
+    }}
+    "Search machine learning on Wikipedia" →
+    {{
+      "intent": "wikipedia",
+      "tasks": {{
+        "search": "machine learning",
+        "read_summary": true
+     }}
+    }}
+    "Find how to merge dicts in Python and extract answer" →
+    {{
+      "intent": "stackoverflow",
+      "tasks": {{
+        "search": "how to merge dicts in Python",
+        "extract_answer": true
+      }}
+    }}    
 
     "Play MrBeast and subscribe" →
     {{

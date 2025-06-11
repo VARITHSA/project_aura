@@ -3,10 +3,11 @@ import sys
 import time
 
 from controller.intent_handler_v2 import IntentHandler_V2
+from controller.intent_voice_handler import IntentVoiceHandler
 from controller.voice_control import VoiceHandler
 from models.automation_wikipedia import WikipediaBot
 from models.automation_youtube import YouTubeBot
-from controller.intent_voice_handler import IntentVoiceHandler
+
 
 class WorkFlowManager:
     def __init__(self):
@@ -15,55 +16,68 @@ class WorkFlowManager:
         self.voice_handler = VoiceHandler()
         self.intent_agent = IntentVoiceHandler()
         
-    def youtube_workflow(self, task:dict,text:str):
+   
+    def youtube_workflow(self, intent_data, text):
+        if not intent_data.get("intent"):
+            print("No intent found in the input.")
+        if intent_data.get("intent") != "youtube":
+            print("❌ Invalid intent. This function only handles YouTube tasks.")
+            return
+        tasks = intent_data.get("tasks", {})
+        ordered_tasks = ["search", "play", "like", "dislike", "subscribe", "unsubscribe"]
+        print(tasks)
+        for task in ordered_tasks:
+            if task in tasks:
+                val = tasks[task]
+                
+                if task == "search":
+                    voice = self.intent_agent.get_response(text)
+                    self.youtube_bot.open_youtube()
+                    self.voice_handler.speak(voice)
+                    print(voice)
+                    self.youtube_bot.search_video(val)
+                elif task == "play":
+                    voice = self.intent_agent.get_response(text)
+                    self.voice_handler.speak(voice)
+                    print(voice)
+                    self.youtube_bot.play_first_video()
+                elif task == "like":
+                    voice = self.intent_agent.get_response(text)
+                    self.voice_handler.speak(voice)
+                    print(voice)
+                    self.youtube_bot.like_video()
+                elif task == "dislike":
+                    voice = self.intent_agent.get_response(text)
+                    self.voice_handler.speak(voice)
+                    print(voice)
+                    self.youtube_bot.dislike_video()
+                elif task == "subscribe":
+                    voice = self.intent_agent.get_response(text)
+                    self.voice_handler.speak(voice)
+                    print(voice)
+                    self.youtube_bot.subscribe_channel()
+                elif task == "unsubscribe":
+                    voice = self.intent_agent.get_response(text)
+                    self.voice_handler.speak(voice)
+                    print(voice)
+                    self.youtube_bot.unsubscribe_channel()
+                else:
+                    print(f"❌ Invalid task: {task}. Supported tasks are: {', '.join(ordered_tasks)}")
+                    time.sleep(2)
+                    self.voice_handler.speak(f"❌ Invalid task: {task}. Supported tasks are: {', '.join(ordered_tasks)}")
+                
         
+            
+    
+    def wikipedia_workflow(self, task: dict, text: str):
+        self.wikipedia_bot.initialize_driver()
         if "search" in task:
-            search_query = task["search"]
+            topic = task["search"]
             voice = self.intent_agent.get_response(text)
             self.voice_handler.speak(voice)
             print(voice)
-            self.youtube_bot.search_video(search_query)
-        
-        if "play" in task:
-            video_name = task["play"]
-            voice = self.intent_agent.get_response(text)
-            self.voice_handler.speak(voice)
-            print(voice)
-            self.youtube_bot.play_video(video_name)
-        
-        if task.get("like"):
-            voice = self.intent_agent.get_response(text)
-            self.voice_handler.speak(voice)
-            print(voice)
-            self.youtube_bot.like_video()
-        if task.get("dislike"):
-            voice = self.intent_agent.get_response(text)
-            self.voice_handler.speak(voice)
-            print(voice)
-            self.youtube_bot.dislike_video()
-        if task.get("subscribe"):
-            channel_name = task["subscribe"]
-            voice = self.intent_agent.get_response(text)
-            self.voice_handler.speak(voice)
-            print(voice)
-            self.youtube_bot.subscribe_channel(channel_name)
-        if task.get("unsubscribe"):
-            channel_name = task["unsubscribe"]
-            voice = self.intent_agent.get_response(text)
-            self.voice_handler.speak(voice)
-            print(voice)
-            self.youtube_bot.unsubscribe_channel(channel_name)
-        if task.get("stop"):
-            voice = self.intent_agent.get_response(text)
-            self.voice_handler.speak(voice)
-            print(voice)
-            self.youtube_bot.stop_video()
-        if task.get("skip_ad"):
-            voice = self.intent_agent.get_response(text)
-            self.voice_handler.speak(voice)
-            print(voice)
-            self.youtube_bot.skip_ad()
-       
+            self.wikipedia_bot.search_topic(topic)
+   
             
         
         
@@ -85,43 +99,47 @@ if __name__ == "__main__":
     intent_handler = IntentHandler_V2()
     intent_voice_handler = IntentVoiceHandler()
     workflow_manager = WorkFlowManager()
+    vh = VoiceHandler()
     print("Welcome to the Voice-Controlled Automation System!")
-    
-    
+    # vh = VoiceHandler()
+    # vh.speak("Hey! I am AURA, your personal assistant. How can I help you today?")
+    # while True:
+    #     audio = vh.listen()
+    #     text = vh.transcribe(audio)
+    #     if text is None:
+    #         continue
+    #     if not vh.running:
+    #         break
+    vh.model_speak_init()
+    print("AURA is listening...")
     while True:
-        text = workflow_manager.voice_handler.listen()
-        if text is None:
-            continue
-        text = workflow_manager.voice_handler.transcribe_audio(text)
-        if text is None:
-            continue
-        voice = intent_voice_handler.get_response(text)
-        workflow_manager.voice_handler.speak(voice)
-        print(voice)
-
-        print(f"Transcribed text: {text}")
-        intent_data = intent_handler.classify_intent(text)
-        voice = intent_voice_handler.get_response(intent_data)
-        workflow_manager.voice_handler.speak(voice)
-        print(f"Intent data: {intent_data}")
-        if intent_data == "youtube":
-            workflow_manager.youtube_workflow(intent_data, text)
-        # text = input("Enter your command: ")   
-        # print(f"Transcribed text: {text}")   
-        # intent_data = intent_handler.classify_intent(text)
-        # intent_response = intent_voice_handler.get_response(text)
-        # print(f"Intent data: {intent_data}")
-        # print(f"Intent response: {intent_response}")
-        # if not intent_data:
+        # audio = vh.listen()
+        # text = vh.transcribe(audio)
+        # if text is None:
         #     continue
+        # if not vh.running:
+        #     break
+        # print(f"Transcribed text: {text}")
+        # voice = intent_voice_handler.get_response(text)
+        # vh.speak(voice)
+        text = input("Enter your command: ")
+        intent_data = intent_handler.classify_intent(text)
+        print(f"Intent data: {intent_data}")
+        if intent_data.get("intent") == "youtube":
+            workflow_manager.youtube_workflow(intent_data, text)
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+   
         
-        # intent = intent_data.get("intent")
-        # task = intent_data.get("task")
-        
-        # if intent == "youtube":
-        #     workflow_manager.youtube_workflow(task)
-        # elif intent == "wikipedia":
-        #     workflow_manager.wikipedia_workflow(task)
-        # else:
-        #     workflow_manager.voice_handler.speak("Sorry, I can't help with that.")
    
