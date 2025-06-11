@@ -14,23 +14,34 @@ class GoogleBot:
         self.wait = WebDriverWait(self.driver, 10)
 
     def start(self):
-        options = Options()
-        options.add_argument("--start-maximized")
-        self.driver = webdriver.Chrome(service=Service(self.driver_path), options=options)
-        self.wait = WebDriverWait(self.driver, 10)
-        self.driver.get("https://www.google.com")
-        print("🌐 Google loaded")
+        try:
+            self.driver.get("https://www.google.com")
+            self.wait.until(EC.presence_of_element_located((By.NAME, "q")))
+            print("🌐 Google loaded successfully")
+        except Exception as e:
+            print(f"❌ Failed to open Google: {str(e)}")
+            raise  # Re-raise the exception to properly handle it in the workflow
 
     def search(self, query):
         try:
+            # First ensure we're on Google
+            if "google.com" not in self.driver.current_url:
+                self.driver.get("https://www.google.com")
+                self.wait.until(EC.presence_of_element_located((By.NAME, "q")))
+            
+            # Perform the search
             search_input = self.wait.until(EC.presence_of_element_located((By.NAME, "q")))
             search_input.clear()
             search_input.send_keys(query)
             search_input.submit()  # Simulates pressing Enter
-            print(f"🔍 Searching for: {query}")
-            time.sleep(3)  # wait for results to load
+            
+            # Wait for search results to load
+            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div#search")))
+            print(f"🔍 Google search results loaded for: {query}")
+            
         except Exception as e:
-            print("❌ Search failed:", e)
+            print(f"❌ Google search failed: {str(e)}")
+            raise  # Re-raise the exception to properly handle it in the workflow
 
     def close(self):
         if self.driver:

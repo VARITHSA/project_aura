@@ -19,36 +19,58 @@ class StackOverflowFlowBot:
         self.wait = WebDriverWait(self.driver, 10)
 
     def open_stackoverflow(self):
-        self.initialize_driver()
-        self.driver.get("https://stackoverflow.com/")
-        self.driver.maximize_window()
-        self.wait.until(EC.presence_of_element_located((By.NAME, "q")))
-        logging.info("✅ StackOverflow opened.")
+        try:
+            self.driver.get("https://stackoverflow.com/")
+            self.driver.maximize_window()
+            self.wait.until(EC.presence_of_element_located((By.NAME, "q")))
+            logging.info("✅ StackOverflow opened successfully")
+        except Exception as e:
+            logging.error(f"❌ Failed to open StackOverflow: {str(e)}")
+            raise  # Re-raise the exception to properly handle it in the workflow
 
     def search_query(self, query):
         try:
+            # First ensure we're on StackOverflow
+            if "stackoverflow.com" not in self.driver.current_url:
+                self.open_stackoverflow()
+            
+            # Perform the search
             search_input = self.wait.until(EC.presence_of_element_located((By.NAME, "q")))
             search_input.clear()
             search_input.send_keys(query)
             search_input.send_keys(Keys.RETURN)
+            
+            # Wait for search results to load
             self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".s-post-summary--content-title a")))
-            logging.info(f"🔍 Searched for: {query}")
+            logging.info(f"🔍 StackOverflow search results loaded for: {query}")
+            
         except Exception as e:
-            logging.error(f"❌ Failed to search: {e}")
+            logging.error(f"❌ Failed to search StackOverflow: {str(e)}")
+            raise  # Re-raise the exception to properly handle it in the workflow
 
     def open_top_result(self):
         try:
+            # Ensure we have search results
+            if "stackoverflow.com/search" not in self.driver.current_url:
+                logging.warning("⚠️ No search results page found")
+                return
+                
             top_links = self.wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".s-post-summary--content-title a")))
             if not top_links:
-                logging.warning("⚠️ No search results found.")
+                logging.warning("⚠️ No search results found")
                 return
+                
             top_link = top_links[0]
             link_text = top_link.text
             top_link.click()
+            
+            # Wait for question page to load
             self.wait.until(EC.presence_of_element_located((By.ID, "question-header")))
             logging.info(f"📄 Opened top result: {link_text}")
+            
         except Exception as e:
-            logging.error(f"❌ Failed to open top result: {e}")
+            logging.error(f"❌ Failed to open top result: {str(e)}")
+            raise  # Re-raise the exception to properly handle it in the workflow
 
     def extract_accepted_answer(self):
         try:

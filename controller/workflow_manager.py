@@ -1,4 +1,3 @@
-
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -8,6 +7,7 @@ from controller.intent_voice_handler import IntentVoiceHandler
 from controller.voice_control import VoiceHandler
 from models.automation_google import GoogleBot
 from models.automation_stackoverflow import StackOverflowFlowBot
+from models.automation_weather import WeatherBot
 from models.automation_wikipedia import WikipediaBot
 from models.automation_youtube import YouTubeBot
 
@@ -17,10 +17,22 @@ class WorkflowManager:
         self.voice_handler = voice_handler
         self.intent_agent = intent_voice_handler
         
-        
         options = Options()
-        # options.add_argument("--headless")
+        # Suppress warnings and errors
+        options.add_argument("--log-level=3")  # Only show fatal errors
+        options.add_argument("--silent")
+        options.add_argument("--disable-logging")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-gpu")  # Disable GPU hardware acceleration
+        options.add_argument("--disable-software-rasterizer")  # Disable software rasterizer
+        options.add_argument("--disable-webgl")  # Disable WebGL
+        options.add_argument("--disable-webgl2")  # Disable WebGL 2
+        options.add_argument("--disable-notifications")  # Disable notifications
         options.add_argument("--start-maximized")
+        
+        # Suppress TensorFlow warnings
+        options.add_experimental_option('excludeSwitches', ['enable-logging'])
         
         service = Service(executable_path="chromedriver.exe")
         self.driver = webdriver.Chrome(service=service, options=options)
@@ -65,8 +77,14 @@ class WorkflowManager:
                     "profile": "go_to_user_profile",
                     "reset": "reset",
                     "quit": "quit"
+                },
+            },
+            "weather":{
+                "bot": WeatherBot(driver=self.driver),
+                "tasks": {
+                    "get_weather": "get_weather",
+                    "quit": "quit"
                 }
-            # Add more bots here
             }
         }
         

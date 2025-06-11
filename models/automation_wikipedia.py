@@ -23,23 +23,18 @@ class WikipediaBot:
         time.sleep(2)
 
     def search_topic(self, query):
-        if not self.driver:
-            print("❌ Web driver not initialized.")
-            return
-
         try:
-            print("🌐 Opening Wikipedia...")
-            self.driver.get("https://www.wikipedia.org/")
-        
-            self.wait.until(EC.presence_of_element_located((By.NAME, "search")))
-        
+            # First ensure we're on Wikipedia
+            if "wikipedia.org" not in self.driver.current_url:
+                self.open_wiki()
+            
             print("🔎 Searching Wikipedia...")
-            search_box = self.driver.find_element(By.NAME, "search")
+            search_box = self.wait.until(EC.presence_of_element_located((By.NAME, "search")))
             search_box.clear()
             search_box.send_keys(query)
             search_box.send_keys(Keys.ENTER)
 
-        # Wait for the paragraph to load
+            # Wait for the content to load
             self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.mw-parser-output > p")))
             paragraph = self.driver.find_element(By.CSS_SELECTOR, "div.mw-parser-output > p").text
 
@@ -48,9 +43,10 @@ class WikipediaBot:
             self.engine.runAndWait()
 
         except Exception as e:
-            print("❌ Error while searching Wikipedia:", e)
+            print(f"❌ Error while searching Wikipedia: {str(e)}")
             self.engine.say("Sorry, I couldn't find anything.")
             self.engine.runAndWait()
+            raise  # Re-raise the exception to properly handle it in the workflow
 
 
     def quit(self):

@@ -24,13 +24,23 @@ class YouTubeBot:
 
     def search_video(self, query):
         try:
+            # First ensure we're on YouTube
+            if "youtube.com" not in self.driver.current_url:
+                self.open_youtube()
+            
+            # Wait for and find the search box
             search_input = self.wait.until(EC.presence_of_element_located((By.NAME, "search_query")))
             search_input.clear()
             search_input.send_keys(query)
             search_input.send_keys(Keys.RETURN)
-            time.sleep(3)
+            
+            # Wait for search results to load
+            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "ytd-video-renderer")))
+            print(f"🔍 Search results loaded for: {query}")
+            
         except Exception as e:
-            print("Failed to search:", e)
+            print(f"❌ Failed to search YouTube: {str(e)}")
+            raise  # Re-raise the exception to properly handle it in the workflow
 
     def play_first_video(self):
         try:
