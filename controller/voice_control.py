@@ -16,6 +16,9 @@ class VoiceHandler:
         self.engine = pyttsx3.init()
         self.model = WhisperModel("base", device="cuda", compute_type="float16")
         self.engine.setProperty('rate', 200)  
+        voices = self.engine.getProperty('voices')
+        self.engine.setProperty('volume', 1.0)
+        self.engine.setProperty('voice', voices[1].id)
         self.sample_rate = 16000
         self.record_seconds = 5
         self.quit_words = ["exit", "quit", "stop"]

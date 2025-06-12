@@ -34,6 +34,11 @@ class IntentHandler_V2:
     - "dislike": true
     - "subscribe": <channel name or true>
     - "unsubscribe": <channel name or true>
+    
+    ***Note: if the query is a video name, use the "play" task. If it is a channel name, use the "subscribe" or "unsubscribe" task.***
+    _if the query is to play something, include search in tasks included play task._
+    
+    
     For the 'stackoverflow' intent, support tasks like:
     - "search": <query>
     - "extract_answer": true
@@ -50,6 +55,15 @@ class IntentHandler_V2:
     
     For the 'weather' intent, support tasks like:
     - "get_weather": <location>
+    
+    For the 'google' intent, support tasks like:
+    - "search": <query> 
+    
+    "if a query is has words like :
+     - "look for details about" or asking general information about a topic, classify the intent as 'google' and use the "search" task.
+     - "look for a definition of" or asking a definition of a word, classify the intent as 'google' and use the "search" task.
+    - "find" or "search" for a specific topic, classify the intent as 'google' and use the "search" task. 
+    - "open" a specific website, classify the intent as 'google' and use the "open" task.
     
     Return a JSON object in this format:
     {{
