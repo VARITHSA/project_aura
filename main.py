@@ -31,9 +31,9 @@ def main():
     while True:
         try:
             # --- Input Options (Voice or Text) ---
-            # audio = voice_handler.listen()
-            # text = voice_handler.transcribe(audio)
-            text = input("💬 Type your command: ").strip()
+            audio = voice_handler.listen()
+            text = voice_handler.transcribe(audio)
+            # text = input("💬 Type your command: ").strip()
 
             if not text:
                 print("⚠️ Empty input received.")

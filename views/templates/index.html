@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>AURA Web</title>
+    <script>
+      async function sendCommand() {
+        const command = document.getElementById("command").value;
+        const res = await fetch("/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ command: command }),
+        });
+        const data = await res.json();
+        document.getElementById("result").innerText =
+          data.response || data.message;
+      }
+    </script>
+  </head>
+  <body>
+    <h2>🧠 AURA Interface</h2>
+    <input
+      type="text"
+      id="command"
+      placeholder="Type command..."
+      style="width: 300px"
+    />
+    <button onclick="sendCommand()">Send</button>
+
+    <h3>Output:</h3>
+    <pre id="result"></pre>
+  </body>
+</html>
