@@ -60,10 +60,20 @@ class IntentHandler_V2:
     - "search": <query> 
     
     "if a query is has words like :
-     - "look for details about" or asking general information about a topic, classify the intent as 'google' and use the "search" task.
-     - "look for a definition of" or asking a definition of a word, classify the intent as 'google' and use the "search" task.
-    - "find" or "search" for a specific topic, classify the intent as 'google' and use the "search" task. 
-    - "open" a specific website, classify the intent as 'google' and use the "open" task.
+      - "look for details about" or asking general information about a topic, classify the intent as 'google' and use the "search" task.
+      - "look for a definition of" or asking a definition of a word, classify the intent as 'google' and use the "search" task.
+      - "find" or "search" for a specific topic, classify the intent as 'google' and use the "search" task. 
+      - "open" a specific website, classify the intent as 'google' and use the "open" task.
+    
+    For the 'system' intent, support tasks like:
+      - "shutdown": true
+      - "restart": true
+      - "sleep": true
+      - "volume_up": true
+      - "volume_down": true
+      - "mute": true
+      - "take_screenshot": true
+      - "open_app": <application name>
     
     Return a JSON object in this format:
     {{
@@ -181,8 +191,24 @@ class IntentHandler_V2:
         }}
       }}
     }}
-
-
+     - if the query is related to the system tasks, that is volume_up, volume_down,mute, shutdown, restart,sleep, open_app, report the intent to be "system" and tasks to be its relative tasks
+     
+    
+    "Increase the volume" →
+    {{
+      "intent": "system",
+      "tasks": {{
+        "volume_up": true
+        }}
+    }}
+    "Take a screenshot of current screen"→
+    {{
+      "intent": "system",
+      "tasks": {{
+        "take_screenshot":true
+        }}
+    }}
+   
 
     Now classify:
     "{user_input}" →

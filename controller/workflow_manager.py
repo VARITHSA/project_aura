@@ -5,12 +5,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from controller.intent_voice_handler import IntentVoiceHandler
 from controller.voice_control import VoiceHandler
+from models.automation_email import AutomationEmail
 from models.automation_google import GoogleBot
 from models.automation_stackoverflow import StackOverflowFlowBot
+from models.automation_system import SystemBot
 from models.automation_weather import WeatherBot
 from models.automation_wikipedia import WikipediaBot
 from models.automation_youtube import YouTubeBot
-from models.automation_email import AutomationEmail
+
 
 class WorkflowManager:
     def __init__(self, voice_handler, intent_voice_handler):
@@ -90,6 +92,19 @@ class WorkflowManager:
                 "bot": AutomationEmail(),
                 "tasks": {
                     "send": "send_email"
+                }
+            },
+            "system":{
+                "bot": SystemBot(),
+                "tasks": {
+                "shutdown": "shutdown",
+                "restart": "restart",
+                "sleep": "sleep",
+                "volume_up": "volume_up",
+                "volume_down": "volume_down",
+                "mute": "mute",
+                "take_screenshot": "take_screenshot",
+                "open_app": "open_app"
                 }
             }
         }
