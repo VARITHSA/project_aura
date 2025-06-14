@@ -18,7 +18,7 @@ def main():
     intent_classifier = IntentHandler_V2()
     intent_voice_handler = IntentVoiceHandler()
     workflow_manager = WorkflowManager(voice_handler, intent_voice_handler)
-
+    
     init_message = "AURA is initializing..."
     print(f"💡 {init_message}")
     voice = intent_voice_handler.get_response(init_message)

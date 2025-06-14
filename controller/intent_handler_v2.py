@@ -192,8 +192,21 @@ class IntentHandler_V2:
       }}
     }}
      - if the query is related to the system tasks, that is volume_up, volume_down,mute, shutdown, restart,sleep, open_app, report the intent to be "system" and tasks to be its relative tasks
-     
-    
+     - keep in mind, if the query has the words "stop /quit/ exit" dont intend it towards "system"
+    "AURA! Shutdown"→
+    {{
+      "intent": "system",
+      "tasks": {{
+        "shutdown": true
+        }}
+    }}
+    "AURA! quit/exit/stop"→
+    {{
+      "intent": ,
+      "tasks": {{
+       
+        }}
+    }}
     "Increase the volume" →
     {{
       "intent": "system",

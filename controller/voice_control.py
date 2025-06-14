@@ -91,6 +91,3 @@ class VoiceHandler:
 
 
 # Run it
-if __name__ == "__main__":
-    aura = VoiceHandler()
-    aura.run()
