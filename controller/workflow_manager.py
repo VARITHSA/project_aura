@@ -10,7 +10,7 @@ from models.automation_stackoverflow import StackOverflowFlowBot
 from models.automation_weather import WeatherBot
 from models.automation_wikipedia import WikipediaBot
 from models.automation_youtube import YouTubeBot
-
+from models.automation_email import AutomationEmail
 
 class WorkflowManager:
     def __init__(self, voice_handler, intent_voice_handler):
@@ -84,6 +84,12 @@ class WorkflowManager:
                 "tasks": {
                     "get_weather": "get_weather",
                     "quit": "quit"
+                }
+            },
+            "email": {
+                "bot": AutomationEmail(),
+                "tasks": {
+                    "send": "send_email"
                 }
             }
         }

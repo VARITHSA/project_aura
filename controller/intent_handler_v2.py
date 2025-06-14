@@ -135,6 +135,54 @@ class IntentHandler_V2:
         "like": true
       }}
     }}
+    if the query is to send a message or send something via email, classify the intent as 'email' and use the "send" task with the appropriate data.
+    
+    "send an email to my friend with the subject Hello and body How are you?" →
+    {{
+      "intent": "email",
+      "tasks": {{
+        "send": {{
+          "to": "my friend",
+          "subject": "Hello",
+          "body": "How are you?"
+        }}
+      }}
+    }}
+    "Send an email to abc@gmail.com saying Hello, this is a test." →
+    {{
+      "intent": "email",
+      "tasks": {{
+        "send": {{
+          "to": "abc@gmail.com",
+          "subject": "No Subject",
+          "body": "Hello, this is a test."
+        }}
+      }}  
+    }}
+    "Send an email to hr@company.com with subject Resume Submission and message I have attached my resume for your review." →
+    {{
+      "intent": "email",
+      "tasks": {{
+        "send": {{
+          "to": "hr@company.com",
+          "subject": "Resume Submission",
+          "body": "I have attached my resume for your review."
+        }}
+      }}
+    }}
+    "Send a message to info@support.com with subject Password Reset and body I need help resetting my password." →
+    {{
+      "intent": "email", 
+      "tasks": {{
+        "send": {{
+          "to": "info@support.com",
+          "subject": "Password Reset",
+          "body": "I need help resetting my password."
+        }}
+      }}
+    }}
+
+
 
     Now classify:
     "{user_input}" →
