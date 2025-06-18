@@ -3,6 +3,7 @@ import sys
 import time
 from io import BytesIO
 
+import noisereduce as nr
 import numpy as np
 import openai
 import pyttsx3
@@ -29,7 +30,7 @@ class VoiceHandler:
 
         # Audio settings
         self.sample_rate = 16000
-        self.record_seconds = 3
+        self.record_seconds = 5
         self.quit_words = ["exit", "quit", "stop"]
         self.running = True
         self.threshold = 0.01  # basic silence threshold
@@ -57,6 +58,9 @@ class VoiceHandler:
         if np.max(energy) < self.threshold:
             print("⚠️ No speech detected (too silent).")
             return None
+        audio = audio / np.max(np.abs(audio))
+        
+        audio = nr.reduce_noise(y=audio, sr = self.sample_rate)
 
         return audio
 
@@ -65,29 +69,51 @@ class VoiceHandler:
             # Convert to in-memory WAV
             audio_int16 = np.int16(audio * 32767)
             buffer = BytesIO()
-            wavfile.write(buffer, 16000, audio_int16)
+            wavfile.write(buffer, self.sample_rate, audio_int16)
             buffer.seek(0)
 
             transcription = self.client.audio.transcriptions.create(
                 model="whisper-1",
                 file=("audio.wav", buffer, "audio/wav"),
-                response_format="text",
+                response_format="verbose_json",
                 language="en"
             )
-            text = transcription.strip().lower()
+            text = transcription.text.strip().lower()
             print(f"📝 Transcribed: {text}")
             return text
         except Exception as e:
             print("❌ Transcription failed:", e)
             return None
-
+        
+        
+    def correct_with_gpt(self, raw_text):
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "You are a transcription corrector. Improve clarity and fix mistakes."},
+                    {"role": "user", "content": f"The transcribed text is: {raw_text}"}
+                ]
+            )
+            corrected = response.choices[0].message.content.strip()
+            print(f"🧠 Corrected by GPT-4o: {corrected}")
+            return corrected
+        except Exception as e:
+            print("⚠️ GPT-4o correction failed:", e)
+            return raw_text
+        
+        
+        
     def run(self):
-        self.model_speak_init()
         while self.running:
             audio = self.listen()
-            text = self.transcribe(audio)
-            if text:
-                self.speak(f"You said: {text}")
+            if audio is None:
+                continue
+            
+            raw_text = self.transcribe(audio)
+            if raw_text:
+                corrected_text = self.correct_with_gpt(raw_text)
+                self.speak(f'you said:{corrected_text}')
 
 
 # Run it

@@ -30,32 +30,36 @@ def main():
 
     while True:
         try:
-            # --- Input Options (Voice or Text) ---
-            # audio = voice_handler.listen()
-            # text = voice_handler.transcribe(audio)
-            text = input("💬 Type your command: ").strip()
-
+            use_voice = input("🎤 Press [Enter] to use voice or type your command:").strip()
+            if use_voice == "":
+                audio = voice_handler.listen()
+                if audio is None:
+                    continue
+                raw_text = voice_handler.transcribe(audio)
+                if not raw_text:
+                    continue
+                text = voice_handler.correct_with_gpt(raw_text)
+            else:
+                text = use_voice.strip()
+                
             if not text:
                 print("⚠️ Empty input received.")
                 continue
-            if text.lower() in ["exit", "quit", "stop"]:
-                voice_handler.speak("Goodbye!")
+            if any(q in text.lower() for q in voice_handler.quit_words):
+                voice_handler.speak("Goodbye!!!!!!")
                 print("👋 Exiting AURA.")
                 break
-
-            print(f"🧠 Detected text: {text}")
+            print(f"🤖 Received: {text}")
             intent_data = intent_classifier.classify_intent(text)
-            print(f"🧩 Intent Data: {intent_data}")
-
-            workflow_manager.execute_workflow(intent_data, text)
+            print(f"🤖 Intent: {intent_data['intent']}")
+            
+            workflow_manager.execute_workflow(intent_data,text)
             print("✅ Workflow executed successfully.")
-
         except KeyboardInterrupt:
             print("\n🛑 Interrupted by user.")
             break
-        except Exception as e:
-            print(f"❌ Error: {e}")
-            voice_handler.speak("An error occurred while processing your request.")
+        
+        
 
     print("🛑 Shutting down AURA...")
         

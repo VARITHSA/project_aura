@@ -5,7 +5,7 @@ import time
 
 
 class GeminiUsageLimiter:
-    def __init__(self, daily_limit = 50, min_interval =5):
+    def __init__(self, daily_limit = 150, min_interval =5):
         """
         daily_limit: Maximum number of API calls allowed per day.
         min_interval: Minimum time interval between API calls in seconds.
